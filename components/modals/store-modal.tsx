@@ -8,6 +8,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "../ui/form";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
+import { useState } from "react";
+import axios from "axios";
+import toast from "react-hot-toast";
 
 
 const formSchema = z.object({
@@ -15,6 +18,7 @@ const formSchema = z.object({
 });
 
 export const StoreModal = () => {
+  const [loading, setLoading] = useState(false);
   const storeModal = useStoreModal();
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -25,8 +29,18 @@ export const StoreModal = () => {
   });
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    console.log(values)
-  }
+    try {
+      setLoading(true);
+      const response = await axios.post("/api/store", values);
+      console.log(response.data);
+      toast.success("Berhasil membuat toko");
+      window.location.assign(`/${response.data.id}`)
+    } catch (error) {
+      toast.error("Gagal Membuat Toko");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <Modal
@@ -49,7 +63,7 @@ export const StoreModal = () => {
                       <Input
                         placeholder="Nama Toko"
                         {...field}
-                      // disabled={loading}
+                      disabled={loading}
                       />
                     </FormControl>
                     <FormMessage />
@@ -58,14 +72,14 @@ export const StoreModal = () => {
               />
               <div className="pt-6 space-x-2 flex items-center justify-end w-full">
                 <Button
-                  // disabled={loading}
+                  disabled={loading}
                   variant="outline"
                   onClick={storeModal.onClose}
                 >
                   Cancel
                 </Button>
                 <Button
-                  // disabled={loading} 
+                  disabled={loading} 
                   type="submit">
                   Continue
                 </Button>
